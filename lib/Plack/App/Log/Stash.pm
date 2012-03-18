@@ -19,6 +19,8 @@ sub to_app {
     sub {
         my $base_env = shift;
         my $env = {%$base_env};
+        die("You need to use a non-blocking server, such as Twiggy")
+            unless delete $env->{'psgi.nonblocking'};
         delete $env->{'psgi.errors'};
         delete $env->{'psgix.io'};
         delete $env->{'psgi.input'};
@@ -34,6 +36,7 @@ sub to_app {
 
 sub consume {
     my ($self, $message) = @_;
+    warn("GOT MESSAGE BACK");
     my $clientid = $message->{clientid};
     delete($self->in_flight->{$clientid})->($message->{response});
 }
