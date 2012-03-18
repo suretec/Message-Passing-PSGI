@@ -1,12 +1,26 @@
 package Plack::App::Log::Stash;
 use Moose;
-use Scalar::Util qw/ refaddr /;
+use Scalar::Util qw/ weaken refaddr /;
 use namespace::autoclean;
 
 with qw/
     Log::Stash::Role::Input
     Log::Stash::Role::Output
 /;
+
+has input => (
+    is => 'ro',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        weaken($self);
+        Log::Stash::Input::ZeroMQ->new(
+            socket_bind => 'tcp://127.0.0.1:5559',
+            socket_type => 'SUB',
+            output_to => $self,
+        );
+    },
+);
 
 has in_flight => (
     isa => 'HashRef',
@@ -16,6 +30,7 @@ has in_flight => (
 
 sub to_app {
     my $self = shift;
+    $self->input; # Build attribute.
     sub {
         my $base_env = shift;
         my $env = {%$base_env};
@@ -36,7 +51,8 @@ sub to_app {
 
 sub consume {
     my ($self, $message) = @_;
-    warn("GOT MESSAGE BACK");
+    use Data::Dumper;
+    warn("GOT MESSAGE BACK " . Dumper($message));
     my $clientid = $message->{clientid};
     delete($self->in_flight->{$clientid})->($message->{response});
 }
