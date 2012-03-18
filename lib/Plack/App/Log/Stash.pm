@@ -51,8 +51,6 @@ sub to_app {
 
 sub consume {
     my ($self, $message) = @_;
-    use Data::Dumper;
-    warn("GOT MESSAGE BACK " . Dumper($message));
     my $clientid = $message->{clientid};
     delete($self->in_flight->{$clientid})->($message->{response});
 }
