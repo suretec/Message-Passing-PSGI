@@ -1,10 +1,15 @@
 use strict;
 use warnings;
 use inc::Module::Install;
+use Module::Install::Authority;
 
 all_from 'lib/Message/Passing/PSGI.pm';
 
 license 'AGPL_3';
+authority('GHENRY');
+resources(
+    repository => "git://github.com/suretec/Message-Passing-PSGI.git",
+);
 
 requires 'Plack';
 requires 'Message::Passing';
