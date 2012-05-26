@@ -1,4 +1,4 @@
-package Log::Stash::PSGI;
+package Message::Passing::PSGI;
 use strict;
 use warnings;
 
@@ -9,7 +9,7 @@ $VERSION = eval $VERSION;
 
 =head1 NAME
 
-Log::Stash::PSGI - ALPHA QUALITY PSGI adaptor for Log::Stash
+Message::Passing::PSGI - ALPHA QUALITY PSGI adaptor for Message::Passing
 
 =head1 SYNOPSIS
 
@@ -17,7 +17,7 @@ Log::Stash::PSGI - ALPHA QUALITY PSGI adaptor for Log::Stash
     plackup -s Twiggy `which log_stash_psgi_app.psgi`
 
     # Run your app with the handler
-    plackup -s Log::Stash t/testapp.psgi
+    plackup -s Message::Passing t/testapp.psgi
 
     http://localhost:5000/
 

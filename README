@@ -1,12 +1,12 @@
 NAME
-    Log::Stash::PSGI - ALPHA QUALITY PSGI adaptor for Log::Stash
+    Message::Passing::PSGI - ALPHA QUALITY PSGI adaptor for Message::Passing
 
 SYNOPSIS
         # Run the server
         plackup -s Twiggy `which log_stash_psgi_app.psgi`
 
         # Run your app with the handler
-        plackup -s Log::Stash t/testapp.psgi
+        plackup -s Message::Passing t/testapp.psgi
 
         http://localhost:5000/
 

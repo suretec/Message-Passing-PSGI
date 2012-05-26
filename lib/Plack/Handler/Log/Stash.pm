@@ -1,13 +1,13 @@
-package Plack::Handler::Log::Stash;
+package Plack::Handler::Message::Passing;
 use Moose;
 use AnyEvent;
-use Log::Stash::Output::ZeroMQ;
-use Log::Stash::Input::ZeroMQ;
-use Log::Stash::Filter::T;
-use Log::Stash::Output::STDOUT;
+use Message::Passing::Output::ZeroMQ;
+use Message::Passing::Input::ZeroMQ;
+use Message::Passing::Filter::T;
+use Message::Passing::Output::STDOUT;
 use namespace::autoclean;
 
-with 'Log::Stash::Role::Output';
+with 'Message::Passing::Role::Output';
 
 has app => (
     is => 'rw',
@@ -17,7 +17,7 @@ has output_to => (
     is => 'ro',
     lazy => 1,
     default => sub {
-        Log::Stash::Output::ZeroMQ->new(
+        Message::Passing::Output::ZeroMQ->new(
             connect => 'tcp://127.0.0.1:5559',
             socket_type => 'PUB',
         );
@@ -38,7 +38,7 @@ sub consume {
 sub run {
     my ($self, $app) = @_;
     $self->app($app);
-    my $input = Log::Stash::Input::ZeroMQ->new(
+    my $input = Message::Passing::Input::ZeroMQ->new(
         connect => 'tcp://127.0.0.1:5558',
         socket_type => 'PULL',
         output_to => $self,

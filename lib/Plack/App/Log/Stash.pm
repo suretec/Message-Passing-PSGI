@@ -1,11 +1,11 @@
-package Plack::App::Log::Stash;
+package Plack::App::Message::Passing;
 use Moose;
 use Scalar::Util qw/ weaken refaddr /;
 use namespace::autoclean;
 
 with qw/
-    Log::Stash::Role::Input
-    Log::Stash::Role::Output
+    Message::Passing::Role::Input
+    Message::Passing::Role::Output
 /;
 
 has input => (
@@ -14,7 +14,7 @@ has input => (
     default => sub {
         my $self = shift;
         weaken($self);
-        Log::Stash::Input::ZeroMQ->new(
+        Message::Passing::Input::ZeroMQ->new(
             socket_bind => 'tcp://127.0.0.1:5559',
             socket_type => 'SUB',
             output_to => $self,

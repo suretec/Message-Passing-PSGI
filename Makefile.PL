@@ -2,13 +2,13 @@ use strict;
 use warnings;
 use inc::Module::Install;
 
-all_from 'lib/Log/Stash/PSGI.pm';
+all_from 'lib/Message/Passing/PSGI.pm';
 
 license 'AGPL_3';
 
 requires 'Plack';
-requires 'Log::Stash';
-requires 'Log::Stash::ZeroMQ';
+requires 'Message::Passing';
+requires 'Message::Passing::ZeroMQ';
 requires 'AnyEvent';
 requires 'Moose';
 requires 'namespace::autoclean';
@@ -25,7 +25,7 @@ author_tests 't/author';
 install_script 'script/log_stash_psgi_app.psgi';
 
 if ($Module::Install::AUTHOR) {
-    system("pod2text lib/Log/Stash/PSGI.pm > README")
+    system("pod2text lib/Message/Passing/PSGI.pm > README")
         and die $!;
 }
 
