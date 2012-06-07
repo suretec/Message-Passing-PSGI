@@ -45,7 +45,6 @@ sub run {
     my ($self, $app) = @_;
     $self->app($app);
     my $connect_address = sprintf('tcp://%s:%s', $self->host, $self->port);
-    warn $connect_address;
     my $input = Message::Passing::Input::ZeroMQ->new(
         connect => $connect_address,
         socket_type => 'PULL',
