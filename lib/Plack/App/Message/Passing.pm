@@ -1,12 +1,20 @@
 package Plack::App::Message::Passing;
 use Moose;
 use Scalar::Util qw/ weaken refaddr /;
+use Message::Passing::Input::ZeroMQ;
+use Message::Passing::Output::ZeroMQ;
 use namespace::autoclean;
 
 with qw/
     Message::Passing::Role::Input
     Message::Passing::Role::Output
 /;
+
+has return_address => (
+    isa => 'Str',
+    is => 'ro',
+    required => 1,
+);
 
 has input => (
     is => 'ro',
@@ -15,9 +23,26 @@ has input => (
         my $self = shift;
         weaken($self);
         Message::Passing::Input::ZeroMQ->new(
-            socket_bind => 'tcp://127.0.0.1:5559',
+            socket_bind => $self->return_address,
             socket_type => 'SUB',
             output_to => $self,
+        );
+    },
+);
+
+has send_address => (
+    isa => 'Str',
+    is => 'ro',
+    required => 1,
+);
+
+has '+output_to' => (
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        Message::Passing::Output::ZeroMQ->new(
+            socket_bind => $self->send_address,
+            socket_type => 'PUSH',
         );
     },
 );
@@ -30,6 +55,7 @@ has in_flight => (
 
 sub to_app {
     my $self = shift;
+    weaken($self);
     $self->input; # Build attribute.
     sub {
         my $base_env = shift;
@@ -40,7 +66,8 @@ sub to_app {
         delete $env->{'psgix.io'};
         delete $env->{'psgi.input'};
         delete $env->{'psgi.streaming'};
-        $env->{'psgix.log.stash.clientid'} = refaddr($base_env);
+        $env->{'psgix.message.passing.clientid'} = refaddr($base_env);
+        $env->{'psgix.message.passing.returnaddress'} = $self->return_address;
         $self->output_to->consume($env);
         return sub {
             my $responder = shift;
