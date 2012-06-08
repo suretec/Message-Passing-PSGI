@@ -3,6 +3,7 @@ use Moose;
 use AnyEvent;
 use Message::Passing::Output::ZeroMQ;
 use Message::Passing::Input::ZeroMQ;
+use JSON qw/ encode_json decode_json /;
 use namespace::autoclean;
 
 with 'Message::Passing::Role::Output';
@@ -29,14 +30,15 @@ sub get_output_to {
 }
 
 sub consume {
-    my ($self, $env) = @_;
+    my ($self, $msg) = @_;
+    my $env = decode_json($msg);
     $env->{'psgi.errors'} = \*STDERR;
     open(my $input_fh, '<', \'') or die $!;
     $env->{'psgi.input'} = $input_fh;
     my $clientid = $env->{'psgix.message.passing.clientid'};
     my $reply_to = $env->{'psgix.message.passing.returnaddress'};
     my $res = $self->app->($env);
-    my $return_data = {clientid => $clientid, response => $res};
+    my $return_data = encode_json({clientid => $clientid, response => $res});
     my $output_to = $self->get_output_to($reply_to);
     $output_to->consume($return_data);
 }

@@ -3,6 +3,7 @@ use Moose;
 use Scalar::Util qw/ weaken refaddr /;
 use Message::Passing::Input::ZeroMQ;
 use Message::Passing::Output::ZeroMQ;
+use JSON qw/ encode_json decode_json /;
 use namespace::autoclean;
 
 with qw/
@@ -68,7 +69,7 @@ sub to_app {
         delete $env->{'psgi.streaming'};
         $env->{'psgix.message.passing.clientid'} = refaddr($base_env);
         $env->{'psgix.message.passing.returnaddress'} = $self->return_address;
-        $self->output_to->consume($env);
+        $self->output_to->consume(encode_json $env);
         return sub {
             my $responder = shift;
             $self->in_flight->{refaddr($base_env)} = $responder;
@@ -78,6 +79,7 @@ sub to_app {
 
 sub consume {
     my ($self, $message) = @_;
+    $message = decode_json $message;
     my $clientid = $message->{clientid};
     delete($self->in_flight->{$clientid})->($message->{response});
 }
