@@ -54,26 +54,36 @@ has in_flight => (
     default => sub { {} },
 );
 
+sub BUILD {
+    my $self = shift;
+    $self->input; # Build attribute.
+}
+
+sub _handle_request {
+    my ($self, $base_env) = @_;
+    weaken($self);
+    my $env = {%$base_env};
+    die("You need to use a non-blocking server, such as Twiggy")
+        unless delete $env->{'psgi.nonblocking'};
+    delete $env->{'psgi.errors'};
+    delete $env->{'psgix.io'};
+    delete $env->{'psgi.input'};
+    delete $env->{'psgi.streaming'};
+    $env->{'psgix.message.passing.clientid'} = refaddr($base_env);
+    $env->{'psgix.message.passing.returnaddress'} = $self->return_address;
+    $self->output_to->consume(encode_json $env);
+    return sub {
+        my $responder = shift;
+        $self->in_flight->{refaddr($base_env)} = $responder;
+    }
+}
+
 sub to_app {
     my $self = shift;
     weaken($self);
-    $self->input; # Build attribute.
     sub {
-        my $base_env = shift;
-        my $env = {%$base_env};
-        die("You need to use a non-blocking server, such as Twiggy")
-            unless delete $env->{'psgi.nonblocking'};
-        delete $env->{'psgi.errors'};
-        delete $env->{'psgix.io'};
-        delete $env->{'psgi.input'};
-        delete $env->{'psgi.streaming'};
-        $env->{'psgix.message.passing.clientid'} = refaddr($base_env);
-        $env->{'psgix.message.passing.returnaddress'} = $self->return_address;
-        $self->output_to->consume(encode_json $env);
-        return sub {
-            my $responder = shift;
-            $self->in_flight->{refaddr($base_env)} = $responder;
-        }
+        my $env = shift;
+        $self->_handle_request($env);
     };
 }
 
