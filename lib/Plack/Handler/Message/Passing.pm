@@ -4,6 +4,7 @@ use AnyEvent;
 use Message::Passing::Output::ZeroMQ;
 use Message::Passing::Input::ZeroMQ;
 use JSON qw/ encode_json decode_json /;
+use Try::Tiny qw/ try catch /;
 use namespace::autoclean;
 
 with 'Message::Passing::Role::Output';
@@ -40,7 +41,24 @@ sub consume {
     $env->{'psgi.input'} = $input_fh;
     my $clientid = $env->{'psgix.message.passing.clientid'};
     my $reply_to = $env->{'psgix.message.passing.returnaddress'};
-    my $res = $self->app->($env);
+    my $res;
+    try { $res = $self->app->($env) }
+    catch {
+        my $exception = "Caught exception: $_ - request aborted\n";
+        $errors .= $exception;
+        my $html = qq{<html><head><title>Internal server error</title></head>
+            <body><h1>Internal Server Error</h1><pre>$exception</pre></body>
+            </html>
+        };
+        $res = [
+            500,
+            [
+                'Content-Type' => 'text/html',
+                'Content-Length' => length($html),
+            ],
+            [ $html ]
+        ];
+    };
     my $return_data = encode_json({
         clientid => $clientid,
         response => $res,

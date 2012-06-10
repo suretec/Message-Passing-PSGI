@@ -16,6 +16,8 @@ requires 'Message::Passing';
 requires 'Message::Passing::ZeroMQ';
 requires 'AnyEvent';
 requires 'Moose';
+requires 'JSON' => '2.00';
+requires 'Try::Tiny';
 requires 'namespace::autoclean';
 
 author_requires(
