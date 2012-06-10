@@ -67,7 +67,14 @@ sub _handle_request {
         unless delete $env->{'psgi.nonblocking'};
     delete $env->{'psgi.errors'};
     delete $env->{'psgix.io'};
-    delete $env->{'psgi.input'};
+    my $input_fh = delete $env->{'psgi.input'};
+    my $input = '';
+    my $len = 0;
+    do {
+        $len = $input_fh->read(my $buf, 4096);
+        $input .= $buf;
+    } while ($len);
+    $env->{'psgi.input'} = $input;
     delete $env->{'psgi.streaming'};
     $env->{'psgix.message.passing.clientid'} = refaddr($base_env);
     $env->{'psgix.message.passing.returnaddress'} = $self->return_address;

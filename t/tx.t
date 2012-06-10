@@ -42,11 +42,13 @@ my $app = MyTestApp->new(
 ok $app;
 is ref($app->to_app), 'CODE';
 
+my $post_data = 'foobar';
+open(my $reader, '<', \$post_data) or die $!;
 my $env = {
+    'psgi.input' => $reader,
     'psgi.nonblocking' => 1,
     'psgi.errors' => 'foo',
     'psgix.io' => 'bar',
-    'psgi.input' => 'baz',
     'psgi.streaming' => 'quux',
     'PATH_INFO' => '/',
 };
@@ -61,6 +63,7 @@ is $app->output_to->message_count, 1;
 my ($json) = $app->output_to->messages;
 my $msg = decode_json($json);
 is_deeply $msg, {
+    'psgi.input' => $post_data,
     PATH_INFO => '/',
     'psgix.message.passing.clientid' => $env_addr,
     'psgix.message.passing.returnaddress' => 'tcp://127.0.0.1:5222',
