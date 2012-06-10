@@ -5,6 +5,7 @@ use Message::Passing::Output::ZeroMQ;
 use Message::Passing::Input::ZeroMQ;
 use JSON qw/ encode_json decode_json /;
 use Try::Tiny qw/ try catch /;
+use Plack::Middleware::BufferedStreaming;
 use namespace::autoclean;
 
 with 'Message::Passing::Role::Output';
@@ -70,7 +71,8 @@ sub consume {
 
 sub run {
     my ($self, $app) = @_;
-    $self->app($app);
+    my $buffered = Plack::MiddleWare::BufferedStreaming->wrap($app);
+    $self->app($buffered);
     my $connect_address = sprintf('tcp://%s:%s', $self->host, $self->port);
     my $input = Message::Passing::Input::ZeroMQ->new(
         connect => $connect_address,
