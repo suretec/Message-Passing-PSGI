@@ -32,13 +32,20 @@ sub get_output_to {
 sub consume {
     my ($self, $msg) = @_;
     my $env = decode_json($msg);
-    $env->{'psgi.errors'} = \*STDERR;
-    open(my $input_fh, '<', \'') or die $!;
+    my $errors;
+    open(my $error_fh, '>', \$errors) or die $!;
+    $env->{'psgi.errors'} = $error_fh;
+    my $input = delete($env->{'psgi.input'}) || '';
+    open(my $input_fh, '<', \$input) or die $!;
     $env->{'psgi.input'} = $input_fh;
     my $clientid = $env->{'psgix.message.passing.clientid'};
     my $reply_to = $env->{'psgix.message.passing.returnaddress'};
     my $res = $self->app->($env);
-    my $return_data = encode_json({clientid => $clientid, response => $res});
+    my $return_data = encode_json({
+        clientid => $clientid,
+        response => $res,
+        errors => $errors,
+    });
     my $output_to = $self->get_output_to($reply_to);
     $output_to->consume($return_data);
 }
