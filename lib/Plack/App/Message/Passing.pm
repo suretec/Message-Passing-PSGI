@@ -81,7 +81,7 @@ sub _handle_request {
     $self->output_to->consume(encode_json $env);
     return sub {
         my $responder = shift;
-        $self->in_flight->{refaddr($base_env)} = $responder;
+        $self->in_flight->{refaddr($base_env)} = [$base_env, $responder];
     }
 }
 
@@ -98,7 +98,11 @@ sub consume {
     my ($self, $message) = @_;
     $message = decode_json $message;
     my $clientid = $message->{clientid};
-    delete($self->in_flight->{$clientid})->($message->{response});
+    my ($env, $responder) = @{ delete($self->in_flight->{$clientid}) };
+    if (length $message->{errors}) {
+        $env->{'psgi.errors'}->print($message->{errors});
+    }
+    $responder->($message->{response});
 }
 
 __PACKAGE__->meta->make_immutable;

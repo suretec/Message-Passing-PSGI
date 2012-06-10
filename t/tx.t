@@ -44,10 +44,12 @@ is ref($app->to_app), 'CODE';
 
 my $post_data = 'foobar';
 open(my $reader, '<', \$post_data) or die $!;
+my $errors = '';
+open(my $error_writer, '>', \$errors) or die $!;
 my $env = {
+    'psgi.errors' => $error_writer,
     'psgi.input' => $reader,
     'psgi.nonblocking' => 1,
-    'psgi.errors' => 'foo',
     'psgix.io' => 'bar',
     'psgi.streaming' => 'quux',
     'PATH_INFO' => '/',
@@ -73,9 +75,11 @@ ok !$response;
 $app->consume(encode_json({
     clientid => $env_addr,
     response => $send_res,
+    errors => 'SOME ERROR',
 }));
 ok $response;
 is_deeply $response, $send_res;
+is $errors, 'SOME ERROR';
 
 done_testing;
 
