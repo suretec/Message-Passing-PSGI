@@ -71,8 +71,14 @@ sub consume {
 
 sub run {
     my ($self, $app) = @_;
-    my $buffered = Plack::MiddleWare::BufferedStreaming->wrap($app);
+    my $buffered = Plack::Middleware::BufferedStreaming->wrap($app);
     $self->app($buffered);
+    if (!$self->host) {
+        die "Please specify --host with the send_address passed to Plack::App::Message::Passing\n";
+    }
+    if (!$self->port) {
+        die "Please specify --port with the send_address port passed to Plack::App::Message::Passing\n";
+    }
     my $connect_address = sprintf('tcp://%s:%s', $self->host, $self->port);
     my $input = Message::Passing::Input::ZeroMQ->new(
         connect => $connect_address,
