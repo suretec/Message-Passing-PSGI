@@ -88,5 +88,37 @@ sub run {
     AnyEvent->condvar->recv;
 }
 
+__PACKAGE__->meta->make_immutable;
 1;
+
+=head1 NAME
+
+Plack::Handler::Message::Passing - handles PSGI requests sent via Message::Passing
+
+=head1 SYNOPSIS
+
+    plackup -E production -s Message::Passing testapp.psgi --host 127.0.0.1 --port 5556
+
+=head1 DESCRIPTION
+
+Connects via ZeroMQ to an instance of L<Plack::App::Message::Passing>, and
+inflates a PSGI request from JSON, then runs it against a real application.
+
+Returns the PSGI response and error stream to the parent handler
+
+=head1 SEE ALSO
+
+=over
+
+=item L<Message::Passing::PSGI>
+
+=item L<Plack::App::Message::Passing>
+
+=back
+
+=head1 AUTHOR, COPYRIGHT AND LICENSE
+
+See L<Message::Passing::PSGI>
+
+=cut
 

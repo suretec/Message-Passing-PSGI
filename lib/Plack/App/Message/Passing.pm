@@ -108,3 +108,37 @@ sub consume {
 __PACKAGE__->meta->make_immutable;
 1;
 
+=head1 NAME
+
+Plack::App::Message::Passing - Send a PSGI environment via Message::Passing
+
+=head1 SYNOPSIS
+
+    # Note that the -e has to all be on one line!
+    plackup -E production -s Twiggy -MPlack::App::Message::Passing -e'Plack::App::Message::Passing->new(return_address => "tcp://127.0.0.1:5555", send_address => "tcp://127.0.0.1:5556")->to_app'
+
+=head1 DESCRIPTION
+
+A L<PSGI> application which serializes the PSGI request as JSON, sends
+it via ZeroMQ.
+
+Used with L<Plack::Handler::Message::Passing>, which inflates a PSGI
+request from JSON, runs it against a real application, and returns the
+results.
+
+=head1 SEE ALSO
+
+=over
+
+=item L<Message::Passing::PSGI>
+
+=item L<Plack::Handler::Message::Passing>
+
+=back
+
+=head1 AUTHOR, COPYRIGHT AND LICENSE
+
+See L<Message::Passing::PSGI>
+
+=cut
+
