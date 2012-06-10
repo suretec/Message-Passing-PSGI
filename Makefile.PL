@@ -12,8 +12,8 @@ resources(
 );
 
 requires 'Plack';
-requires 'Message::Passing';
-requires 'Message::Passing::ZeroMQ';
+requires 'Message::Passing' => '0.007';
+requires 'Message::Passing::ZeroMQ' => '0.005';
 requires 'AnyEvent';
 requires 'Moose';
 requires 'JSON' => '2.00';
