@@ -8,6 +8,7 @@ add_stopwords(qw(
     adaptor
     Starman
     ZeroMQ
+    PSGI
     API
     Affero
     FCGI
